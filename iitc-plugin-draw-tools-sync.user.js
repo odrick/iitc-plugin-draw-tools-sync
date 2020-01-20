@@ -17,107 +17,148 @@ plugin_info.buildName = '0.0.1';
 plugin_info.dateTimeVersion = '2020-01-20-162932';
 plugin_info.pluginId = 'draw-tools-sync';
 
-// use own namespace for plugin
 window.plugin.drawToolsSync = function() {};
 
-window.plugin.drawToolsSync.authorizer = null;
+var CLIENT_ID = '850036042257-lps5dks8a2274cmdtab87bpksh2mr3m6.apps.googleusercontent.com';
+var SCOPE = 'https://www.googleapis.com/auth/drive.appfolder';
+var AUTHORIZED = false;
+var DATA_FILE_NAME = "IITC_DRAW_TOOLS_SYNC.json";
+var DATA_FILE_ID = '';
+var DATA = {'default': ''};
 
-window.plugin.drawToolsSync.Authorizer = function(options) {
-  this.authCallback = options.authCallback;
-  this.authorizing = false;
-  this.authorized = false;
-  this.isAuthed = this.isAuthed.bind(this);
-  this.isAuthorizing = this.isAuthorizing.bind(this);
-  this.authorize = this.authorize.bind(this);
-};
+function authorize(redirect, callback) {
+    AUTHORIZED = false;
 
-window.plugin.drawToolsSync.Authorizer.prototype.CLIENT_ID = '850036042257-lps5dks8a2274cmdtab87bpksh2mr3m6.apps.googleusercontent.com';
-window.plugin.drawToolsSync.Authorizer.prototype.SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-window.plugin.drawToolsSync.Authorizer.prototype.isAuthed = function() {
-  return this.authorized;
-};
-
-window.plugin.drawToolsSync.Authorizer.prototype.isAuthorizing = function() {
-  return this.authorizing;
-};
-window.plugin.drawToolsSync.Authorizer.prototype.addAuthCallback = function(callback) {
-  if(typeof(this.authCallback) === 'function') this.authCallback = [this.authCallback];
-  this.authCallback.push(callback);
-};
-
-window.plugin.drawToolsSync.Authorizer.prototype.authComplete = function() {
-  debugger
-  this.authorizing = false;
-  if(this.authCallback) {
-    if(typeof(this.authCallback) === 'function') this.authCallback();
-    if(this.authCallback instanceof Array && this.authCallback.length > 0) {
-      $.each(this.authCallback, function(ind, func) {
-        func();
-      });
+    function handleAuthResult(authResult) {
+        if(authResult && !authResult.error) {
+            AUTHORIZED = true;
+            init(callback);
+        }
+        else {
+            AUTHORIZED = false;
+            var error = (authResult && authResult.error) ? authResult.error : 'not authorized';
+            console.log(error);
+            if(error === "idpiframe_initialization_failed") {
+                console.log('You need enable 3rd-party cookies in your browser or allow [*.]google.com');
+            }
+            if(callback) callback();
+        }
     }
-  }
-};
 
-window.plugin.drawToolsSync.Authorizer.prototype.authorize = function(redirect) {
-  this.authorizing = true;
-  this.authorized = false;
-  var handleAuthResult, _this;
-  _this = this;
+    gapi.auth2.init({client_id: CLIENT_ID, scope: SCOPE, ux_mode: 'redirect', redirect_uri: 'https://intel.ingress.com'}).then(function() {
+        var isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
 
-  handleAuthResult = function(authResult) {
-    console.log("TEST", authResult);
-    if(authResult && !authResult.error) {
-      _this.authorized = true;
-      console.log('All ok');
-    } else {
-      _this.authorized = false;
-      var error = (authResult && authResult.error) ? authResult.error : 'not authorized';
-      console.log(error);
-      if (error === "idpiframe_initialization_failed") {
-        console.log('You need enable 3rd-party cookies in your browser or allow [*.]google.com');
-      }
-    }
-    _this.authComplete();
-  };
+        if(isSignedIn) {
+            AUTHORIZED = true;
+            init(callback);
+        }
+        else {
+            AUTHORIZED = false;
 
-  var GoogleAuth;
-  gapi.auth2.init({
-    'client_id': this.CLIENT_ID,
-    'scope': this.SCOPES,
-    ux_mode: 'redirect',
-    redirect_uri: 'https://intel.ingress.com/'
-  }).then(function() {
-    
-    GoogleAuth = gapi.auth2.getAuthInstance();
-    var isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+            if(redirect) {
+                gapi.auth2.getAuthInstance().signIn().then(handleAuthResult);
+            }
+            else {
+                if(callback) callback();
+            }
+        }
+    }, handleAuthResult);
+}
 
-    if(isSignedIn) {
-      _this.authorized = true;
-      console.log('Authorized');
+function init(callback) {
+    DATA = {'default': ''};
 
-    } else {
-      _this.authorized = false;
+    getDataFileInfo(function(info) {
+        console.log('data file info', info);
+        if(info) {
+            DATA_FILE_ID = info.id;
+        }
+        else {
+            createDataFile(callback);
+        }
+    });
+}
 
-      if (redirect) {
-        GoogleAuth.signIn().then(handleAuthResult);
-      }
-    }
-    _this.authComplete();
-    
-  }, handleAuthResult);
-};
+function getDataFileInfo(callback) {
+    gapi.client.load('drive', 'v3').then(function() {
+        gapi.client.drive.files.list({
+            spaces: 'appDataFolder',
+            fields: 'files(id, name)',
+            orderBy: 'createdTime'
+        }).then(function(resp) {
+            if(callback) callback(resp.result.files[0]);
+        });
+    });
+}
 
-var setup = function() {
-  window.plugin.drawToolsSync.authorizer = new window.plugin.drawToolsSync.Authorizer({
-    'authCallback': [function() {console.log('Auth callback', arguments)}]
-  });
+function createDataFile(callback) {
+    gapi.client.load('drive', 'v3').then(function() {
+        gapi.client.drive.files.create({
+            resource: {
+                name: DATA_FILE_NAME,
+                mimeType: 'application/json',
+                parents: ['appDataFolder']
+            },
+            fields: 'id'
+        }).then(function(resp) {
+            DATA_FILE_ID = resp.result.id;
+            if(callback) callback();
+        });
+    });
+}
 
-  var GOOGLEAPI = 'https://apis.google.com/js/api.js';
-  $.getScript(GOOGLEAPI).done(function () {
-    gapi.load('client:auth2', window.plugin.drawToolsSync.authorizer.authorize);
-  });
-};
+function readFile(id, callback) {
+    gapi.client.load('drive', 'v3').then(function() {
+        gapi.client.drive.files.get({fileId: id, alt: 'media'}).then(function(resp) {
+            console.log(resp);
+        });
+    });
+}
+
+function saveFile(id, content, callback) {
+    gapi.client.load('drive', 'v3').then(function() {
+        gapi.client.request({
+            path: '/upload/drive/v3/files/' + id,
+            method: 'PATCH',
+            params: {uploadType: 'media'},
+            body: typeof content === 'string' ? content : JSON.stringify(content)
+        }).then(function(resp) {
+            console.log(resp);
+        });
+    });
+}
+
+function deleteFile(id, callback) {
+    gapi.client.load('drive', 'v3').then(function() {
+        gapi.client.drive.files.delete({fileId: id}).then(function() {
+            console.log('File deleted');
+            if(callback) callback();
+        });
+    });
+}
+
+function signOut(callback) {
+    var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+        console.log('User signed out.');
+        auth2.disconnect();
+        if(callback) callback();
+    });
+}
+
+function setup() {
+    window.plugin.drawToolsSync.authorize = authorize;
+    window.plugin.drawToolsSync.signOut = signOut;
+    window.plugin.drawToolsSync.getDataFileInfo = getDataFileInfo;
+    window.plugin.drawToolsSync.createDataFile = createDataFile;
+    window.plugin.drawToolsSync.deleteFile = deleteFile;
+    window.plugin.drawToolsSync.readFile = readFile;
+    window.plugin.drawToolsSync.saveFile = saveFile;
+
+    $.getScript('https://apis.google.com/js/api.js').done(function () {
+        gapi.load('client:auth2', window.plugin.drawToolsSync.authorize);
+    });
+}
 
 setup.priority = 'high';
 
@@ -133,4 +174,3 @@ var info = {};
 if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) info.script = { version: GM_info.script.version, name: GM_info.script.name, description: GM_info.script.description };
 script.appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));
 (document.body || document.head || document.documentElement).appendChild(script);
- 
