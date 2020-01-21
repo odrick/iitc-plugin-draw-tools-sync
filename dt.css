@@ -1,0 +1,58 @@
+#drawToolsSyncBox {
+	display: none;
+	position: absolute!important;
+	z-index: 5001;
+	top: 50px;
+	left: 60px;
+	width: 200px;
+	height: 250px;
+	overflow: hidden;
+	background: rgba(8, 48, 78, .9);
+	border: 1px solid #20a8b1;
+	color: #ffce00;
+	padding: 8px
+}
+
+#drawToolsSyncBox #drawToolsSyncTopBar {
+	height: 15px!important
+}
+
+#drawToolsSyncBox #drawToolsSyncTopBar * {
+	height: 14px!important
+}
+
+#drawToolsSyncBox .handle {
+	width: 89%;
+	text-align: center;
+	color: #fff;
+	line-height: 6px;
+	cursor: move;
+	float: right
+}
+
+#drawToolsSyncBox #drawToolsSyncTopBar .btn {
+	display: block;
+	width: 10%;
+	cursor: pointer;
+	color: #20a8b1;
+	font-weight: 700;
+	text-align: center;
+	line-height: 13px;
+	font-size: 18px;
+	border: 1px solid #20a8b1;
+	float: left
+}
+
+#drawToolsSyncBox #drawToolsSyncTopBar .btn:hover {
+	color: #ffce00;
+	text-decoration: none
+}
+
+#drawToolsSyncBox #drawToolsSyncTitle {
+	font-size: 12px;
+	padding-top: 5px;
+}
+
+#drawToolsSyncBox #drawToolsSyncList {
+	clear: both;
+}
