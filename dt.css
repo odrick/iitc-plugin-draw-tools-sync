@@ -10,7 +10,8 @@
 	background: rgba(8, 48, 78, .9);
 	border: 1px solid #20a8b1;
 	color: #ffce00;
-	padding: 8px
+	padding: 8px;
+	font-size: 13px;
 }
 
 #drawToolsSyncBox #drawToolsSyncTopBar {
@@ -55,4 +56,45 @@
 
 #drawToolsSyncBox #drawToolsSyncList {
 	clear: both;
+	margin-top: 8px;
+	height: 200px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+#drawToolsSyncBox #drawToolsSyncList > div {
+	display: block;
+	padding: 2px;
+}
+
+#drawToolsSyncBox #drawToolsSyncLock {
+	display: none;
+	position: absolute!important;
+	left: 0;
+	top: 26px;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	background-color: rgba(0,0,0,0.5);
+}
+
+#drawToolsSyncBox #drawToolsSyncLock svg {
+	display: block;
+	margin: auto;
+	margin-top: 80px;
+}
+
+#drawToolsSyncBox #drawToolsSyncAuth {
+	padding-top: 24px;
+}
+
+#drawToolsSyncBox #drawToolsSyncAuth a {
+	display: block;
+	color: #ffce00;
+	border: 1px solid #ffce00;
+	padding: 3px 0;
+	margin: 10px auto;
+	width: 80%;
+	text-align: center;
+	background: rgba(8,48,78,.9);
 }
