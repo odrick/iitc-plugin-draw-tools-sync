@@ -193,6 +193,15 @@ var SCOPE = 'https://www.googleapis.com/auth/drive.appfolder';
 
 var dataStorage = null;
 var ready = false;
+var dataFileExt = 'dtd';
+
+function fixDataFileName(name) {
+    var parts = name.split('.');
+    if(parts.length < 2 || parts.pop() !== dataFileExt) {
+        name = name + '.' + dataFileExt;
+    }
+    return name;
+}
 
 function setup() {
     dataStorage = new GoogleDriveStorage(CLIENT_ID, SCOPE);
@@ -206,7 +215,38 @@ function setup() {
     });
 
     window.plugin.drawToolsSync.isReady = function() {
-        return ready;
+        return !!(window.plugin.drawTools && ready);
+    };
+
+    window.plugin.drawToolsSync.saveFile = function(name, callback) {
+        var data = localStorage['plugin-draw-tools-layer'];
+        if(!data) {
+            alert('Draw tools data is empty');
+            return;
+        }
+
+        dataStorage.saveFileByName(fixDataFileName(name), data, callback);
+    };
+
+    window.plugin.drawToolsSync.loadFile = function(name, callback) {
+        dataStorage.findFile(fixDataFileName(name), function(file) {
+            if(!file) {
+                alert("File " + name + " not found");
+                return;
+            }
+
+            dataStorage.readFile(file.id, function(data) {
+                if(data && data.result) {
+                    window.plugin.drawTools.import(data.result);
+                    window.plugin.drawTools.save();
+                }
+                else {
+                    alert("Error while loading file " + name);
+                }
+
+                if(callback) callback();
+            });
+        });
     };
 }
 
