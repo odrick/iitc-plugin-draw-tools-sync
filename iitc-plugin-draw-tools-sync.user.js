@@ -19,145 +19,195 @@ plugin_info.pluginId = 'draw-tools-sync';
 
 window.plugin.drawToolsSync = function() {};
 
-var CLIENT_ID = '850036042257-lps5dks8a2274cmdtab87bpksh2mr3m6.apps.googleusercontent.com';
-var SCOPE = 'https://www.googleapis.com/auth/drive.appfolder';
-var AUTHORIZED = false;
-var DATA_FILE_NAME = "IITC_DRAW_TOOLS_SYNC.json";
-var DATA_FILE_ID = '';
-var DATA = {'default': ''};
 
-function authorize(redirect, callback) {
-    AUTHORIZED = false;
+////////////// Default storage - Google Drive ////////////////
+function GoogleDriveStorage(clientId, scope) {
+    this.clientId = clientId;
+    this.scope = scope;
+
+    this.authorized = false;
+}
+
+GoogleDriveStorage.prototype.init = function(callback) {
+    $.getScript('https://apis.google.com/js/api.js').done(function () {
+        gapi.load('client:auth2', callback);
+    });
+};
+
+GoogleDriveStorage.prototype.authorize = function(redirect, callback) {
+    this.authorized = false;
+
+    var self = this;
 
     function handleAuthResult(authResult) {
         if(authResult && !authResult.error) {
-            AUTHORIZED = true;
-            init(callback);
+            self.authorized = true;
         }
         else {
-            AUTHORIZED = false;
+            self.authorized = false;
             var error = (authResult && authResult.error) ? authResult.error : 'not authorized';
             console.log(error);
             if(error === "idpiframe_initialization_failed") {
                 console.log('You need enable 3rd-party cookies in your browser or allow [*.]google.com');
             }
-            if(callback) callback();
         }
+
+        if(callback) callback(self.authorized);
     }
 
-    gapi.auth2.init({client_id: CLIENT_ID, scope: SCOPE, ux_mode: 'redirect', redirect_uri: 'https://intel.ingress.com'}).then(function() {
+    gapi.auth2.init({
+        client_id: this.clientId,
+        scope: this.scope,
+        ux_mode: 'redirect',
+        redirect_uri: 'https://intel.ingress.com'
+    }).then(function() {
         var isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
 
         if(isSignedIn) {
-            AUTHORIZED = true;
-            init(callback);
+            self.authorized = true;
+            if(callback) callback(self.authorized);
         }
         else {
-            AUTHORIZED = false;
+            self.authorized = false;
 
             if(redirect) {
                 gapi.auth2.getAuthInstance().signIn().then(handleAuthResult);
             }
             else {
-                if(callback) callback();
+                if(callback) callback(self.authorized);
             }
         }
     }, handleAuthResult);
-}
+};
 
-function init(callback) {
-    DATA = {'default': ''};
-
-    getDataFileInfo(function(info) {
-        console.log('data file info', info);
-        if(info) {
-            DATA_FILE_ID = info.id;
-        }
-        else {
-            createDataFile(callback);
-        }
+GoogleDriveStorage.prototype.signOut = function(callback) {
+    var auth2 = gapi.auth2.getAuthInstance();
+    var self = this;
+    auth2.signOut().then(function () {
+        auth2.disconnect();
+        self.authorized = false;
+        if(callback) callback();
     });
-}
+};
 
-function getDataFileInfo(callback) {
+GoogleDriveStorage.prototype.getFilesList = function(callback) {
     gapi.client.load('drive', 'v3').then(function() {
         gapi.client.drive.files.list({
             spaces: 'appDataFolder',
             fields: 'files(id, name)',
-            orderBy: 'createdTime'
+            orderBy: 'modifiedTime'
         }).then(function(resp) {
-            if(callback) callback(resp.result.files[0]);
+            if(callback) callback(resp.result.files);
         });
     });
-}
+};
 
-function createDataFile(callback) {
-    gapi.client.load('drive', 'v3').then(function() {
-        gapi.client.drive.files.create({
-            resource: {
-                name: DATA_FILE_NAME,
-                mimeType: 'application/json',
-                parents: ['appDataFolder']
-            },
-            fields: 'id'
-        }).then(function(resp) {
-            DATA_FILE_ID = resp.result.id;
-            if(callback) callback();
+GoogleDriveStorage.prototype.findFile = function(name, callback) {
+    this.getFilesList(function(list) {
+        var found = null;
+
+        for(var i=0; i<list.length; i++) {
+            var file = list[i];
+            if(file.name.toLowerCase() === name.toLowerCase()) found = file;
+        }
+
+        if(callback) callback(found);
+    });
+};
+
+GoogleDriveStorage.prototype.createFile = function(name, callback) {
+    this.findFile(name, function(file) {
+        if(file) {
+            if(callback) callback(file);
+            return;
+        }
+
+        gapi.client.load('drive', 'v3').then(function() {
+            gapi.client.drive.files.create({
+                resource: {
+                    name: name,
+                    mimeType: 'text/plain',
+                    parents: ['appDataFolder']
+                },
+                fields: 'id,name'
+            }).then(function(resp) {
+                if(callback) callback(resp.result);
+            });
         });
     });
-}
+};
 
-function readFile(id, callback) {
+GoogleDriveStorage.prototype.readFile = function(id, callback) {
     gapi.client.load('drive', 'v3').then(function() {
         gapi.client.drive.files.get({fileId: id, alt: 'media'}).then(function(resp) {
-            console.log(resp);
+            console.log('File loaded', resp);
+            if(callback) callback(resp);
         });
     });
-}
+};
 
-function saveFile(id, content, callback) {
+GoogleDriveStorage.prototype.saveFileById = function(id, content, callback) {
     gapi.client.load('drive', 'v3').then(function() {
         gapi.client.request({
             path: '/upload/drive/v3/files/' + id,
             method: 'PATCH',
             params: {uploadType: 'media'},
-            body: typeof content === 'string' ? content : JSON.stringify(content)
+            body: content
         }).then(function(resp) {
-            console.log(resp);
+            console.log('File saved', resp);
+            if(callback) callback(resp);
         });
     });
-}
+};
 
-function deleteFile(id, callback) {
+GoogleDriveStorage.prototype.saveFileByName = function(name, content, callback) {
+    var self = this;
+
+    self.findFile(name, function(file) {
+        console.log("found", file);
+
+        if(file) {
+            self.saveFileById(file.id, content, callback);
+        }
+        else {
+            self.createFile(name, function(file) {
+                self.saveFileById(file.id, content, callback);
+            });
+        }
+    });
+};
+
+GoogleDriveStorage.prototype.deleteFile = function(id, callback) {
     gapi.client.load('drive', 'v3').then(function() {
         gapi.client.drive.files.delete({fileId: id}).then(function() {
             console.log('File deleted');
             if(callback) callback();
         });
     });
-}
+};
 
-function signOut(callback) {
-    var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-        console.log('User signed out.');
-        auth2.disconnect();
-        if(callback) callback();
-    });
-}
+//////////////////////////////////////////////////////////////
+
+var CLIENT_ID = '850036042257-lps5dks8a2274cmdtab87bpksh2mr3m6.apps.googleusercontent.com';
+var SCOPE = 'https://www.googleapis.com/auth/drive.appfolder';
+
+var dataStorage = null;
+var ready = false;
 
 function setup() {
-    window.plugin.drawToolsSync.authorize = authorize;
-    window.plugin.drawToolsSync.signOut = signOut;
-    window.plugin.drawToolsSync.getDataFileInfo = getDataFileInfo;
-    window.plugin.drawToolsSync.createDataFile = createDataFile;
-    window.plugin.drawToolsSync.deleteFile = deleteFile;
-    window.plugin.drawToolsSync.readFile = readFile;
-    window.plugin.drawToolsSync.saveFile = saveFile;
+    dataStorage = new GoogleDriveStorage(CLIENT_ID, SCOPE);
+    window.plugin.drawToolsSync.dataStorage = dataStorage;
 
-    $.getScript('https://apis.google.com/js/api.js').done(function () {
-        gapi.load('client:auth2', window.plugin.drawToolsSync.authorize);
+    dataStorage.init(function() {
+        dataStorage.authorize(false, function(authorized) {
+            console.log("Authorized status:", authorized);
+            ready = true;
+        });
     });
+
+    window.plugin.drawToolsSync.isReady = function() {
+        return ready;
+    };
 }
 
 setup.priority = 'high';
