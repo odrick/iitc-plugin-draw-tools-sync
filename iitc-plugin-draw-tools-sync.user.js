@@ -276,6 +276,24 @@ function setup() {
             dataStorage.deleteFile(file.id, callback);
         });
     };
+
+    if(!window.plugin.bookmarks.isSmart) {
+        //Desktop mode
+    }
+    else {
+        //Mobile mode
+        if(window.useAndroidPanes()) android.addPane("plugin-draw-tools-sync-load", "Draw Tools Load", "ic_action_star");
+        if(window.useAndroidPanes()) android.addPane("plugin-draw-tools-sync-save", "Draw Tools Save", "ic_action_star");
+        window.addHook('paneChanged', function(pane) {
+            if(pane === 'plugin-draw-tools-sync-load') {
+
+            }
+
+            if(pane === 'plugin-draw-tools-sync-save') {
+
+            }
+        });
+    }
 }
 
 setup.priority = 'high';
