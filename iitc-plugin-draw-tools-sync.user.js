@@ -218,6 +218,23 @@ function setup() {
         return !!(window.plugin.drawTools && ready);
     };
 
+    window.plugin.drawToolsSync.getFilesList = function(callback) {
+        dataStorage.getFilesList(function(res) {
+            var list = [];
+            for(var i=0; i<res.length; i++) {
+                var file = res[i];
+                var parts = file.name.split('.');
+                if(parts.pop() === dataFileExt) {
+                    list.push({
+                        id: file.id,
+                        name: parts.join('.')
+                    });
+                }
+            }
+            if(callback) callback(list);
+        });
+    };
+
     window.plugin.drawToolsSync.saveFile = function(name, callback) {
         var data = localStorage['plugin-draw-tools-layer'];
         if(!data) {
@@ -246,6 +263,17 @@ function setup() {
 
                 if(callback) callback();
             });
+        });
+    };
+
+    window.plugin.drawToolsSync.deleteFile = function(name, callback) {
+        dataStorage.findFile(fixDataFileName(name), function(file) {
+            if(!file) {
+                alert("File " + name + " not found");
+                return;
+            }
+
+            dataStorage.deleteFile(file.id, callback);
         });
     };
 }
