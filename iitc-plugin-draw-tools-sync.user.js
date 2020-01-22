@@ -2,7 +2,7 @@
 // @author         Odrick
 // @name           IITC plugin: Draw Tools Sync
 // @category       Draw
-// @version        0.0.1
+// @version        0.0.2
 // @description    Sync draw tools data between clients via Google Drive API.
 // @id             draw-tools-sync
 // @match          https://intel.ingress.com/*
@@ -252,19 +252,12 @@ function wrapper(plugin_info) {
         }
     }
 
-    var refreshFilesListId = 0;
-
     function refreshFilesList(mode) {
-        refreshFilesListId++;
-        var currentRefresh = refreshFilesListId;
-
         showLock();
 
         $("#drawToolsSyncList").html("");
 
         window.plugin.drawToolsSync.getFilesList(function(list) {
-            if(currentRefresh !== refreshFilesListId) return;
-
             for(var i=0; i<list.length; i++) {
                 var file = list[i];
                 if(mode === 0) {
@@ -386,6 +379,14 @@ function wrapper(plugin_info) {
         };
 
         window.plugin.drawToolsSync.saveFile = function(name, callback) {
+            if(typeof name !== "string") return;
+            name = name.trim();
+
+            if(name === '') {
+                alert('Name cannot be empty');
+                return;
+            }
+
             var data = localStorage['plugin-draw-tools-layer'];
             if(!data) {
                 alert('Draw tools data is empty');
