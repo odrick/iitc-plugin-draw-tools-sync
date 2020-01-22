@@ -12,6 +12,12 @@
 	color: #ffce00;
 	padding: 8px;
 	font-size: 13px;
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #drawToolsSyncBox #drawToolsSyncTopBar {
@@ -62,11 +68,6 @@
 	overflow-y: auto;
 }
 
-#drawToolsSyncBox #drawToolsSyncList > div {
-	display: block;
-	padding: 2px;
-}
-
 #drawToolsSyncBox #drawToolsSyncLock {
 	display: none;
 	position: absolute!important;
@@ -97,4 +98,33 @@
 	width: 80%;
 	text-align: center;
 	background: rgba(8,48,78,.9);
+}
+
+.drawToolsSyncItem {
+	margin-top: 2px;
+	margin-bottom: 2px;
+	padding: 4px;
+	background: rgba(8,48,78,.75);
+	cursor: pointer;
+	color: #fff;
+}
+
+.drawToolsSyncItem:hover {
+	background: rgba(4,24,39,1);
+}
+
+#drawToolsSyncLoadPanel {
+	padding-top: 8px;
+}
+
+#drawToolsSyncLoadPanel label {
+	display: block;
+	float: left;
+	padding-top: 2px;
+	padding-left: 5px;
+}
+
+#drawToolsSyncLoadPanel input {
+	display: block;
+	float: left;
 }

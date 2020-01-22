@@ -195,6 +195,8 @@ function wrapper(plugin_info) {
     var ready = false;
     var dataFileExt = 'dtd';
 
+    var options = {};
+
     function fixDataFileName(name) {
         var parts = name.split('.');
         if(parts.length < 2 || parts.pop() !== dataFileExt) {
@@ -219,6 +221,7 @@ function wrapper(plugin_info) {
         content += '    </div>';
         content += '    <div id="drawToolsSyncContent">';
         content += '        <div id="drawToolsSyncList"></div>';
+        content += '        <div id="drawToolsSyncLoadPanel"><input type="checkbox" id="drawToolsSyncAutoClose" onchange="window.plugin.drawToolsSync.onAutoCloseChange()"/> <label for="drawToolsSyncAutoClose">Close after saving or loading</label> </div>';
         content += '        <div id="drawToolsSyncSavePanel"></div>';
         content += '    </div>';
         content += '    <div id="drawToolsSyncAuth"><a onclick="window.plugin.drawToolsSync.auth();return false;">Authorize</a></div>';
@@ -262,17 +265,15 @@ function wrapper(plugin_info) {
 
             $("#drawToolsSyncList").html("");
 
-            /*
             var t = list.slice();
-            for(var i=0; i<20; i++) {
+            for(i=0; i<20; i++) {
                 list = list.concat(t);
             }
-            */
 
             for(var i=0; i<list.length; i++) {
                 var file = list[i];
                 if(mode === 0) {
-                    $("#drawToolsSyncList").append("<div><a onclick='window.plugin.drawToolsSync.loadFile(\"" + file.name + "\")'>" + file.name + "</a></div>");
+                    $("#drawToolsSyncList").append("<div class='drawToolsSyncItem' onclick='window.plugin.drawToolsSync.loadFile(\"" + file.name + "\")'><b>" + file.name + "</b></div>");
                 }
             }
 
@@ -295,9 +296,13 @@ function wrapper(plugin_info) {
 
         if(mode === 0) {
             title = "DrawTools Load";
+            $("#drawToolsSyncLoadPanel").show();
+            $("#drawToolsSyncSavePanel").hide();
         }
         else {
             title = "DrawTools Save";
+            $("#drawToolsSyncLoadPanel").hide();
+            $("#drawToolsSyncSavePanel").show();
         }
 
         $("#drawToolsSyncBox").show();
@@ -319,11 +324,32 @@ function wrapper(plugin_info) {
         $("#drawToolsSyncBox").hide();
     }
 
+    function saveOptions() {
+        localStorage['plugin-draw-tools-sync-options'] = JSON.stringify(options);
+    }
+
+    function saveBoxPosition() {
+        if($('#drawToolsSyncBox').css('display') === 'none') return;
+
+        options.boxPositionX = parseInt($('#drawToolsSyncBox').css('left'));
+        options.boxPositionY = parseInt($('#drawToolsSyncBox').css('top'));
+
+        saveOptions();
+    }
+
     function setup() {
         if(!window.plugin.drawTools) return;
 
+        try {options = JSON.parse(localStorage['plugin-draw-tools-sync-options'])}
+        catch(e) {}
+
         setupCSS();
         setupUI();
+
+        $("#drawToolsSyncAutoClose").prop('checked', !!options.autoClose);
+
+        if(options.boxPositionX !== undefined) $('#drawToolsSyncBox').css('left', options.boxPositionX + 'px');
+        if(options.boxPositionY !== undefined) $('#drawToolsSyncBox').css('top', options.boxPositionY + 'px');
 
         dataStorage = new GoogleDriveStorage(CLIENT_ID, SCOPE);
         window.plugin.drawToolsSync.dataStorage = dataStorage;
@@ -374,21 +400,28 @@ function wrapper(plugin_info) {
             showLock();
 
             dataStorage.findFile(fixDataFileName(name), function(file) {
-                hideLock();
-
                 if(!file) {
                     alert("File " + name + " not found");
+                    hideLock();
                     return;
                 }
 
                 dataStorage.readFile(file.id, function(data) {
                     if(data && data.result) {
+                        window.plugin.drawTools.drawnItems.clearLayers();
                         window.plugin.drawTools.import(data.result);
                         window.plugin.drawTools.save();
+
+                        var bounds = window.plugin.drawTools.drawnItems.getBounds();
+                        window.map.setView({lat: (bounds._southWest.lat + bounds._northEast.lat)/2, lng: (bounds._southWest.lng + bounds._northEast.lng)/2}, window.map.getZoom());
+
+                        if(options.autoClose) hideBox();
                     }
                     else {
                         alert("Error while loading file " + name);
                     }
+
+                    hideLock();
 
                     if(callback) callback();
                 });
@@ -406,9 +439,18 @@ function wrapper(plugin_info) {
             });
         };
 
+        window.plugin.drawToolsSync.onAutoCloseChange = function() {
+            options.autoClose = $("#drawToolsSyncAutoClose").prop('checked');
+            saveOptions();
+        };
+
         window.plugin.drawToolsSync.showBox = showBox;
         window.plugin.drawToolsSync.hideBox = hideBox;
+
+        setInterval(saveBoxPosition, 1000);
     }
+
+
 
     setup.priority = 'high';
 
