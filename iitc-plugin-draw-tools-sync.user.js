@@ -2,11 +2,12 @@
 // @author         Odrick
 // @name           IITC plugin: Draw Tools Sync
 // @category       Draw
-// @version        0.0.1
+// @version        0.0.4
 // @description    Sync draw tools data between clients via Google Drive API.
 // @id             draw-tools-sync
 // @match          https://intel.ingress.com/*
 // @grant          none
+// @namespace https://greasyfork.org/users/410740
 // ==/UserScript==
 
 function wrapper(plugin_info) {
@@ -201,9 +202,9 @@ function wrapper(plugin_info) {
     }
 
     function setupCSS() {
-        var css = '#drawToolsSyncBox{display:none;position:absolute!important;z-index:5001;top:50px;left:60px;width:200px;height:250px;overflow:hidden;background:rgba(8,48,78,.9);border:1px solid #20a8b1;color:#ffce00;padding:8px;font-size:13px;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}#drawToolsSyncBox #drawToolsSyncTopBar{height:15px!important}#drawToolsSyncBox #drawToolsSyncTopBar *{height:14px!important}#drawToolsSyncBox .handle{width:89%;text-align:center;color:#fff;line-height:6px;cursor:move;float:right}#drawToolsSyncBox #drawToolsSyncTopBar .btn{display:block;width:10%;cursor:pointer;color:#20a8b1;font-weight:700;text-align:center;line-height:13px;font-size:18px;border:1px solid #20a8b1;float:left}#drawToolsSyncBox #drawToolsSyncTopBar .btn:hover{color:#ffce00;text-decoration:none}#drawToolsSyncBox #drawToolsSyncTitle{font-size:12px;padding-top:5px}#drawToolsSyncBox #drawToolsSyncList{clear:both;margin-top:8px;height:200px;overflow-x:hidden;overflow-y:auto;border-bottom:1px solid #20a8b1}#drawToolsSyncBox #drawToolsSyncLock{display:none;position:absolute!important;left:0;top:26px;width:100%;height:100%;text-align:center;background-color:rgba(0,0,0,.5)}#drawToolsSyncBox #drawToolsSyncLock svg{display:block;margin:auto;margin-top:80px}#drawToolsSyncBox #drawToolsSyncAuth{padding-top:24px}#drawToolsSyncBox #drawToolsSyncAuth a{display:block;color:#ffce00;border:1px solid #ffce00;padding:3px 0;margin:10px auto;width:80%;text-align:center;background:rgba(8,48,78,.9)}.drawToolsSyncItem{margin-top:2px;margin-bottom:2px;padding:4px;background:rgba(8,48,78,.75);cursor:pointer;color:#fff}.drawToolsSyncItem:hover{background:rgba(4,24,39,1)}#drawToolsSyncLoadPanel{padding-top:8px}#drawToolsSyncLoadPanel label{display:block;float:left;padding-top:2px;padding-left:5px}#drawToolsSyncLoadPanel input{display:block;float:left}#drawToolsSyncSaveName{width:100px;height:18px}#drawToolsSyncSavePanel{padding-top:6px;text-align:center}#drawToolsSyncSavePanel input{color:#fff}#drawToolsSyncSavePanel button{color:#ffce00;border:1px solid #ffce00;text-align:center;background:rgba(8,48,78,.9)}.drawToolsSyncDeleteButton{float:left;width:14px;height:14px;border:1px solid #f33;background:#000;color:#f33;text-align:center;font-weight:700;margin-right:8px}.drawToolsSyncDeleteButton:hover{background:#900}';
+        var css = '#drawToolsSyncBox{display:none;position:absolute!important;z-index:5001;top:50px;left:60px;width:200px;height:250px;overflow:hidden;background:rgba(8,48,78,.9);border:1px solid #20a8b1;color:#ffce00;padding:8px;font-size:13px;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}#drawToolsSyncBox #drawToolsSyncTopBar{height:15px!important}#drawToolsSyncBox #drawToolsSyncTopBar *{height:14px!important}#drawToolsSyncBox .handle{width:89%;text-align:center;color:#fff;line-height:6px;cursor:move;float:right}#drawToolsSyncBox #drawToolsSyncTopBar .btn{display:block;width:10%;cursor:pointer;color:#20a8b1;font-weight:700;text-align:center;line-height:13px;font-size:18px;border:1px solid #20a8b1;float:left}#drawToolsSyncBox #drawToolsSyncTopBar .btn:hover{color:#ffce00;text-decoration:none}#drawToolsSyncBox #drawToolsSyncTitle{font-size:12px;padding-top:5px}#drawToolsSyncBox #drawToolsSyncList{clear:both;margin-top:8px;height:200px;overflow-x:hidden;overflow-y:auto;border-bottom:1px solid #20a8b1}#drawToolsSyncBox #drawToolsSyncLock{display:none;position:absolute!important;left:0;top:26px;width:100%;height:100%;text-align:center;background-color:rgba(0,0,0,.5)}#drawToolsSyncBox #drawToolsSyncLock svg{display:block;margin:auto;margin-top:80px}#drawToolsSyncBox #drawToolsSyncAuth{padding-top:24px}#drawToolsSyncBox #drawToolsSyncAuth a{display:block;color:#ffce00;border:1px solid #ffce00;padding:3px 0;margin:10px auto;width:80%;text-align:center;background:rgba(8,48,78,.9)}.drawToolsSyncItem{margin-top:2px;margin-bottom:2px;padding:4px;background:rgba(8,48,78,.75);cursor:pointer;color:#fff}.drawToolsSyncItem:hover{background:rgba(4,24,39,1)}#drawToolsSyncLoadPanel{padding-top:8px}#drawToolsSyncLoadPanel label{display:block;float:left;padding-top:2px;padding-left:5px}#drawToolsSyncLoadPanel input{display:block;float:left}#drawToolsSyncSaveName{width:100px;height:18px}#drawToolsSyncSavePanel{padding-top:6px;text-align:center}#drawToolsSyncSavePanel input{color:#fff}#drawToolsSyncSavePanel button{color:#ffce00;border:1px solid #ffce00;text-align:center;background:rgba(8,48,78,.9)}.drawToolsSyncDeleteButton{float:left;width:14px;height:14px;border:1px solid #f33;background:#000;color:#f33;text-align:center;font-weight:700;margin-right:8px}.drawToolsSyncDeleteButton:hover{background:#900}@media only screen and (max-width:600px){#drawToolsSyncBox{top:0;left:0;right:0;bottom:0;width:100%;height:100%;box-sizing:border-box;border:0}#drawToolsSyncBox #drawToolsSyncTopBar{display:none}#drawToolsSyncBox #drawToolsSyncLock svg{display:block;position:absolute;left:50%;top:50%;margin-left:-25px;margin-top:-25px}#drawToolsSyncBox #drawToolsSyncList{clear:both;margin-top:0;position:absolute;left:0;top:0;right:0;bottom:0;width:100%;height:100%;padding:8px;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;border-bottom:0;font-size:22px!important}#drawToolsSyncBox #drawToolsSyncLock{top:0}.drawToolsSyncItem{font-size:22px}.drawToolsSyncDeleteButton{width:22px;height:22px;font-size:18px;border:2px solid #f33}.drawToolsSyncBoxSaveMode #drawToolsSyncList{top:48px!important;height:calc(100% - 48px)!important}#drawToolsSyncSavePanel{font-size:22px}#drawToolsSyncSavePanel input{font-size:22px;width:200px;height:28px}#drawToolsSyncSavePanel button{font-size:20px;height:28px}}';
         $('<style>').prop('type', 'text/css').html(css).appendTo('head');
-        //'<link rel="stylesheet" type="text/css" href="http://localhost/dt.css"/>').appendTo('head');
+        //$('<link rel="stylesheet" type="text/css" href="http://localhost/dt.css"/>').appendTo('head');
     }
 
     function setupUI() {
@@ -228,21 +229,19 @@ function wrapper(plugin_info) {
 
         if(window.useAndroidPanes()) {
             //Mobile mode
-            android.addPane("plugin-draw-tools-sync-load", "DrawTools Load", "ic_action_star");
+            android.addPane("plugin-draw-tools-sync-load", "DrawTools Load", "ic_action_view_as_list");
             android.addPane("plugin-draw-tools-sync-save", "DrawTools Save", "ic_action_save");
 
             window.addHook('paneChanged', function(pane) {
                 if(pane === 'plugin-draw-tools-sync-load') {
                     showBox(0);
                 }
-
-                if(pane === 'plugin-draw-tools-sync-save') {
+                else if(pane === 'plugin-draw-tools-sync-save') {
                     showBox(1);
                 }
-
-                setTimeout(function() {
-                    window.show('map');
-                }, 0);
+                else {
+                    hideBox();
+                }
             });
         }
         else {
@@ -252,18 +251,13 @@ function wrapper(plugin_info) {
         }
     }
 
-    var refreshFilesListId = 0;
-
     function refreshFilesList(mode) {
-        refreshFilesListId++;
-        var currentRefresh = refreshFilesListId;
-
         showLock();
 
         $("#drawToolsSyncList").html("");
 
         window.plugin.drawToolsSync.getFilesList(function(list) {
-            if(currentRefresh !== refreshFilesListId) return;
+            var t = list.slice();
 
             for(var i=0; i<list.length; i++) {
                 var file = list[i];
@@ -297,11 +291,15 @@ function wrapper(plugin_info) {
             title = "DrawTools Load";
             $("#drawToolsSyncLoadPanel").show();
             $("#drawToolsSyncSavePanel").hide();
+
+            $("#drawToolsSyncBox").attr('class', 'drawToolsSyncBoxLoadMode');
         }
         else {
             title = "DrawTools Save";
             $("#drawToolsSyncLoadPanel").hide();
             $("#drawToolsSyncSavePanel").show();
+
+            $("#drawToolsSyncBox").attr('class', 'drawToolsSyncBoxSaveMode');
         }
 
         $("#drawToolsSyncBox").show();
@@ -317,6 +315,8 @@ function wrapper(plugin_info) {
             $("#drawToolsSyncAuth").show();
             $("#drawToolsSyncContent").hide();
         }
+
+        if(window.isSmartphone()) $("#drawToolsSyncLoadPanel").hide();
     }
 
     function hideBox() {
@@ -348,8 +348,12 @@ function wrapper(plugin_info) {
         $("#drawToolsSyncAutoClose").prop('checked', !!options.autoClose);
         $("#drawToolsSyncSaveName").val(options.lastSave || 'default');
 
-        if(options.boxPositionX !== undefined) $('#drawToolsSyncBox').css('left', options.boxPositionX + 'px');
-        if(options.boxPositionY !== undefined) $('#drawToolsSyncBox').css('top', options.boxPositionY + 'px');
+        if(window.isSmartphone()) {
+        }
+        else {
+            if(options.boxPositionX !== undefined) $('#drawToolsSyncBox').css('left', options.boxPositionX + 'px');
+            if(options.boxPositionY !== undefined) $('#drawToolsSyncBox').css('top', options.boxPositionY + 'px');
+        }
 
         dataStorage = new GoogleDriveStorage(CLIENT_ID, SCOPE);
         window.plugin.drawToolsSync.dataStorage = dataStorage;
@@ -386,6 +390,14 @@ function wrapper(plugin_info) {
         };
 
         window.plugin.drawToolsSync.saveFile = function(name, callback) {
+            if(typeof name !== "string") return;
+            name = name.trim();
+
+            if(name === '') {
+                alert('Name cannot be empty');
+                return;
+            }
+
             var data = localStorage['plugin-draw-tools-layer'];
             if(!data) {
                 alert('Draw tools data is empty');
@@ -396,7 +408,7 @@ function wrapper(plugin_info) {
 
             dataStorage.findFile(fixDataFileName(name), function(file) {
                 if(file) {
-                    if(!confirm("Owerride " + name + " save?")) {
+                    if(!confirm("Override " + name + " save?")) {
                         hideLock();
                         return;
                     }
@@ -405,8 +417,12 @@ function wrapper(plugin_info) {
                 $('#drawToolsSyncSaveName').val(name);
 
                 dataStorage.saveFileByName(fixDataFileName(name), data, function() {
-                    if(options.autoClose) hideBox();
-                    else refreshFilesList(1);
+                    if(!window.isSmartphone() && options.autoClose) {
+                        hideBox();
+                    }
+                    else {
+                        refreshFilesList(1);
+                    }
 
                     options.lastSave = name;
                     saveOptions();
@@ -435,7 +451,14 @@ function wrapper(plugin_info) {
                         var bounds = window.plugin.drawTools.drawnItems.getBounds();
                         window.map.setView({lat: (bounds._southWest.lat + bounds._northEast.lat)/2, lng: (bounds._southWest.lng + bounds._northEast.lng)/2}, window.map.getZoom());
 
-                        if(options.autoClose) hideBox();
+                        if(!window.isSmartphone() && options.autoClose) {
+                            hideBox();
+                        }
+
+                        if(window.isSmartphone()) {
+                            hideBox();
+                            window.show('map');
+                        }
                     }
                     else {
                         alert("Error while loading file " + name);
